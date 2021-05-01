@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FindKiwi</string>
+    <string name="where">Kiwi nerede</string>
+    <string name="yes">Evet</string>
+    <string name="previous">Geri</string>
+    <string name="home_fragment_label">Anasayfa</string>
+    <string name="maps_fragment_label">Harita</string>
+</resources>
