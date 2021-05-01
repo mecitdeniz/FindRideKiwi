@@ -4,10 +4,12 @@ public class LanguageItem {
 
     private String name;
     private int image;
+    private String langCode;
 
-    public LanguageItem(String name, int image) {
+    public LanguageItem(String name, int image,String langCode) {
         this.name = name;
         this.image = image;
+        this.langCode = langCode;
     }
 
     public String getName() {
@@ -24,5 +26,13 @@ public class LanguageItem {
 
     public void setImage(int image) {
         this.image = image;
+    }
+
+    public String getLangCode() {
+        return langCode;
+    }
+
+    public void setLangCode(String langCode) {
+        this.langCode = langCode;
     }
 }
