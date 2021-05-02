@@ -10,7 +10,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import find.ride.kiwi.Constants;
-import find.ride.kiwi.LanguageItem;
+import find.ride.kiwi.models.LanguageItem;
 import find.ride.kiwi.R;
 
 public class LocaleHelper {

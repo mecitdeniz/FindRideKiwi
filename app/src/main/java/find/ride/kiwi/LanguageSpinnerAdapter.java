@@ -12,6 +12,8 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
+import find.ride.kiwi.models.LanguageItem;
+
 public class LanguageSpinnerAdapter extends ArrayAdapter<LanguageItem> {
 
     public LanguageSpinnerAdapter(Context context, ArrayList<LanguageItem> languageList){

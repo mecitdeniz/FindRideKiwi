@@ -1,4 +1,4 @@
-package find.ride.kiwi;
+package find.ride.kiwi.models;
 
 public class LanguageItem {
 
