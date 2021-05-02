@@ -4,5 +4,6 @@
     <string name="where">Where is the Kiwi</string>
     <string name="yes">Yes</string>
     <string name="home_fragment_label">Home</string>
-    <string name="maps_fragment_label" >Map</string>
+    <string name="maps_fragment_label">Map</string>
+    <string name="title_activity_maps">Map</string>
 </resources>
