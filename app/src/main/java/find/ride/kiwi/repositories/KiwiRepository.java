@@ -44,8 +44,8 @@ public class KiwiRepository {
                 JSONObject feature = features.getJSONObject(i);
                 JSONObject geometry = feature.getJSONObject("geometry");
                 JSONArray coordinates = geometry.getJSONArray("coordinates");
-                double latitude = coordinates.getDouble(0);
-                double longitude = coordinates.getDouble(1);
+                double longitude = coordinates.getDouble(0);
+                double latitude = coordinates.getDouble(1);
                 Kiwi kiwi = new Kiwi(latitude,longitude);
                 kiwis.add(kiwi);
             }
