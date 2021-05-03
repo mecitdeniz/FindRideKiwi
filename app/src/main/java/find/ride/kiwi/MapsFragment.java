@@ -4,7 +4,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,14 +17,19 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +41,7 @@ import static find.ride.kiwi.Constants.LOCATION_PERMISSION_CODE;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
+    private FusedLocationProviderClient fusedLocationProviderClient;
     private KiwiViewModel kiwiViewModel;
     private List<Kiwi> kiwis;
     private GoogleMap map;
@@ -55,6 +63,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        SupportMapFragment mapFragment =
+                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
+        if (mapFragment != null) {
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+            mapFragment.getMapAsync(this);
+        }
+
         checkPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_PERMISSION_CODE);
 
     }
@@ -63,16 +79,17 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         map = googleMap;
+        map.setMyLocationEnabled(true);
+
         BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN);
 
-        map.setMyLocationEnabled(true);
         //Add kiwis onto the map
         for (Kiwi kiwi : kiwis) {
             LatLng latLng = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
             map.addMarker(new MarkerOptions().position(latLng).title("Kiwi").icon(bitmapDescriptor));
-            map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         }
-        map.moveCamera(CameraUpdateFactory.zoomTo(13.0f));
+
+
     }
 
     public void checkPermission(Activity activity, String permission, int requestCode) {
@@ -92,19 +109,30 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 initMap();
             }
-        }else {
+        } else {
             getActivity().onBackPressed();
         }
     }
 
+    @SuppressLint("MissingPermission")
     private void initMap() {
-
-        SupportMapFragment mapFragment =
-                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
+        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                map.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
+                checkDistance(userLocation);
+            }
+        });
     }
 
-
+    private void checkDistance(LatLng latLng){
+        for (Kiwi kiwi : kiwis){
+            LatLng latLngKiwi = new LatLng(kiwi.getLatitude(),kiwi.getLongitude());
+            double distance = SphericalUtil.computeDistanceBetween(latLng, latLngKiwi);
+            if (distance <= 1){
+                Log.d("LOCATION UPDATE :","Congrulations! You found a kiwi" + String.valueOf(distance));
+            }
+        }
+    }
 }
