@@ -14,6 +14,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -40,6 +42,8 @@ import com.google.maps.android.SphericalUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import find.ride.kiwi.models.Kiwi;
 import find.ride.kiwi.viewmodels.KiwiViewModel;
@@ -58,6 +62,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private LocationCallback locationCallback;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean firstRun = true;
+    private boolean firstTimeFound = true;
+    private LinearLayout linearLayoutDialog;
+    private TextView textViewDialog;
 
     @Override
     public View onCreateView(
@@ -78,6 +85,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState);
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
+        linearLayoutDialog = view.findViewById(R.id.linearLayout_dialog);
+        textViewDialog = view.findViewById(R.id.textView_dialog);
 
         if (mapFragment != null) {
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -101,7 +111,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         map.setMyLocationEnabled(true);
 
         BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN);
-
         //Add kiwis onto the map
         for (Kiwi kiwi : kiwis) {
             LatLng latLng = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
@@ -133,6 +142,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private void initMap() {
+        hideDialog();
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -140,9 +150,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 if (locationResult != null && locationResult.getLocations() != null) {
                     double latitude = locationResult.getLastLocation().getLatitude();
                     double longitude = locationResult.getLastLocation().getLongitude();
-                    LatLng userLocation = new LatLng(latitude,longitude);
+                    LatLng userLocation = new LatLng(latitude, longitude);
 
-                    if (firstRun){
+                    if (firstRun) {
                         map.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
                         map.moveCamera(CameraUpdateFactory.zoomTo(13.0f));
                         firstRun = false;
@@ -150,13 +160,17 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
                     for (Kiwi kiwi : kiwis) {
                         LatLng latLngKiwi = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
-                        boolean isFoundOne = checkDistance(userLocation,latLngKiwi);
+                        boolean isFoundOne = checkDistance(userLocation, latLngKiwi);
 
-                        if (isFoundOne)
-                            Log.d("LOCATION UPDATE :", "Congrulations! You found a kiwi");
+                        if (isFoundOne && firstTimeFound) {
+                            firstTimeFound = false;
+                            textViewDialog.setText(R.string.congratulatory);
+                            showDialog();
+                            hideDialog();
+                        }
+                        Log.d("DISTANCE " , String.valueOf(isFoundOne));
+                        Log.d("LOCATION UPDATE FR", "Latitude : " + String.valueOf(latitude) + " Longitude :" + String.valueOf(longitude));
                     }
-
-                    Log.d("LOCATION UPDATE FR", "Latitude : " + String.valueOf(latitude) + " Longitude :" + String.valueOf(longitude));
                 }
             }
         };
@@ -168,6 +182,21 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         LocationServices.getFusedLocationProviderClient(getActivity())
                 .requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+    }
+
+
+    private void hideDialog() {
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        linearLayoutDialog.setVisibility(View.GONE);
+                    }
+                }, 5000);
+    }
+
+    private void showDialog() {
+        linearLayoutDialog.setVisibility(View.VISIBLE);
     }
 
     private boolean checkDistance(LatLng from, LatLng to) {
