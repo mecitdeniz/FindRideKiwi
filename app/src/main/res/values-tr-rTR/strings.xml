@@ -6,4 +6,6 @@
     <string name="previous">Geri</string>
     <string name="home_fragment_label">Anasayfa</string>
     <string name="maps_fragment_label">Harita</string>
+    <string name="explanation">Küçük kiviler genellikle bu güvenli saklanma yerlerini sever.</string>
+    <string name="congratulatory">Onu Buldun! Çok teşekkür ederim!</string>
 </resources>

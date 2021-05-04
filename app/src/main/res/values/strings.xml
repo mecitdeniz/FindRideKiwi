@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name">FindKiwi</string>
     <string name="previous">Previous</string>
-    <string name="where">Where is the Kiwi</string>
+    <string name="where">Where is the Kiwi ? Can you help me ?</string>
     <string name="yes">Yes</string>
     <string name="home_fragment_label">Home</string>
     <string name="maps_fragment_label">Map</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="explanation">Little kiwis often like these safe hiding places.</string>
+    <string name="congratulatory">You found it! Thank you so much!</string>
 </resources>
