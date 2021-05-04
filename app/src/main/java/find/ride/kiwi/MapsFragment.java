@@ -3,6 +3,9 @@ package find.ride.kiwi;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -37,6 +40,9 @@ import java.util.List;
 import find.ride.kiwi.models.Kiwi;
 import find.ride.kiwi.viewmodels.KiwiViewModel;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+import static androidx.core.content.ContextCompat.getSystemServiceName;
+import static androidx.core.content.ContextCompat.startForegroundService;
 import static find.ride.kiwi.Constants.LOCATION_PERMISSION_CODE;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
@@ -69,6 +75,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         if (mapFragment != null) {
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
             mapFragment.getMapAsync(this);
+            startLocationService();
         }
 
         checkPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_PERMISSION_CODE);
@@ -126,13 +133,49 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    private void checkDistance(LatLng latLng){
-        for (Kiwi kiwi : kiwis){
-            LatLng latLngKiwi = new LatLng(kiwi.getLatitude(),kiwi.getLongitude());
+    private void checkDistance(LatLng latLng) {
+        for (Kiwi kiwi : kiwis) {
+            LatLng latLngKiwi = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
             double distance = SphericalUtil.computeDistanceBetween(latLng, latLngKiwi);
-            if (distance <= 1){
-                Log.d("LOCATION UPDATE :","Congrulations! You found a kiwi" + String.valueOf(distance));
+            if (distance <= 1) {
+                Log.d("LOCATION UPDATE :", "Congrulations! You found a kiwi" + String.valueOf(distance));
             }
         }
     }
+
+    private boolean isLocationServiceRunning() {
+        ActivityManager activityManager = (ActivityManager) getActivity()
+                .getSystemService(Context.ACTIVITY_SERVICE);
+
+        if (activityManager != null) {
+            for (ActivityManager.RunningServiceInfo serviceInfo :
+                    activityManager.getRunningServices(Integer.MAX_VALUE)) {
+                if (LocationService.class.getName().equals(serviceInfo.service.getClassName())) {
+                    if (serviceInfo.foreground) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
+    private void startLocationService(){
+        if (!isLocationServiceRunning()){
+            Intent intent = new Intent(getActivity().getApplicationContext(),LocationService.class);
+            intent.setAction(Constants.ACTION_START_LOCATION_SERVICE);
+            getActivity().startService(intent);
+        }
+    }
+
+    private void stopLocationService(){
+        if (isLocationServiceRunning()){
+            Intent intent = new Intent(getActivity().getApplicationContext(),LocationService.class);
+            intent.setAction(Constants.ACTION_STOP_LOCATION_SERVICE);
+            getActivity().startService(intent);
+        }
+    }
+
+
 }
