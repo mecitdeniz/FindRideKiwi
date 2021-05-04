@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,9 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -47,10 +51,12 @@ import static find.ride.kiwi.Constants.LOCATION_PERMISSION_CODE;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private KiwiViewModel kiwiViewModel;
     private List<Kiwi> kiwis;
     private GoogleMap map;
+    private KiwiViewModel kiwiViewModel;
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+    private FusedLocationProviderClient fusedLocationProviderClient;
 
     @Override
     public View onCreateView(
@@ -75,11 +81,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         if (mapFragment != null) {
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
             mapFragment.getMapAsync(this);
-            startLocationService();
         }
 
         checkPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_PERMISSION_CODE);
+    }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        LocationServices.getFusedLocationProviderClient(getActivity())
+                .removeLocationUpdates(locationCallback);
     }
 
     @SuppressLint("MissingPermission")
@@ -95,8 +106,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             LatLng latLng = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
             map.addMarker(new MarkerOptions().position(latLng).title("Kiwi").icon(bitmapDescriptor));
         }
-
-
     }
 
     public void checkPermission(Activity activity, String permission, int requestCode) {
@@ -123,59 +132,43 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private void initMap() {
-        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+        locationCallback = new LocationCallback() {
             @Override
-            public void onSuccess(Location location) {
-                LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                map.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
-                checkDistance(userLocation);
-            }
-        });
-    }
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                if (locationResult != null && locationResult.getLocations() != null) {
+                    double latitude = locationResult.getLastLocation().getLatitude();
+                    double longitude = locationResult.getLastLocation().getLongitude();
+                    LatLng userLocation = new LatLng(latitude,longitude);
 
-    private void checkDistance(LatLng latLng) {
-        for (Kiwi kiwi : kiwis) {
-            LatLng latLngKiwi = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
-            double distance = SphericalUtil.computeDistanceBetween(latLng, latLngKiwi);
-            if (distance <= 1) {
-                Log.d("LOCATION UPDATE :", "Congrulations! You found a kiwi" + String.valueOf(distance));
-            }
-        }
-    }
+                    map.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
+                    map.moveCamera(CameraUpdateFactory.zoomTo(13.0f));
 
-    private boolean isLocationServiceRunning() {
-        ActivityManager activityManager = (ActivityManager) getActivity()
-                .getSystemService(Context.ACTIVITY_SERVICE);
+                    for (Kiwi kiwi : kiwis) {
+                        LatLng latLngKiwi = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
+                        boolean isFoundOne = checkDistance(userLocation,latLngKiwi);
 
-        if (activityManager != null) {
-            for (ActivityManager.RunningServiceInfo serviceInfo :
-                    activityManager.getRunningServices(Integer.MAX_VALUE)) {
-                if (LocationService.class.getName().equals(serviceInfo.service.getClassName())) {
-                    if (serviceInfo.foreground) {
-                        return true;
+                        if (isFoundOne)
+                            Log.d("LOCATION UPDATE :", "Congrulations! You found a kiwi");
                     }
+
+                    Log.d("LOCATION UPDATE FR", "Latitude : " + String.valueOf(latitude) + " Longitude :" + String.valueOf(longitude));
                 }
             }
-            return false;
-        }
+        };
+
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(4000);
+        locationRequest.setFastestInterval(2000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        LocationServices.getFusedLocationProviderClient(getActivity())
+                .requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+    }
+
+    private boolean checkDistance(LatLng from, LatLng to) {
+        double distance = SphericalUtil.computeDistanceBetween(from, to);
+        if (distance <= 1) return true;
         return false;
     }
-
-    private void startLocationService(){
-        if (!isLocationServiceRunning()){
-            Intent intent = new Intent(getActivity().getApplicationContext(),LocationService.class);
-            intent.setAction(Constants.ACTION_START_LOCATION_SERVICE);
-            getActivity().startService(intent);
-        }
-    }
-
-    private void stopLocationService(){
-        if (isLocationServiceRunning()){
-            Intent intent = new Intent(getActivity().getApplicationContext(),LocationService.class);
-            intent.setAction(Constants.ACTION_STOP_LOCATION_SERVICE);
-            getActivity().startService(intent);
-        }
-    }
-
-
 }
