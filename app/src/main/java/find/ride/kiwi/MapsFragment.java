@@ -57,6 +57,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    private boolean firstRun = true;
 
     @Override
     public View onCreateView(
@@ -141,8 +142,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     double longitude = locationResult.getLastLocation().getLongitude();
                     LatLng userLocation = new LatLng(latitude,longitude);
 
-                    map.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
-                    map.moveCamera(CameraUpdateFactory.zoomTo(13.0f));
+                    if (firstRun){
+                        map.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
+                        map.moveCamera(CameraUpdateFactory.zoomTo(13.0f));
+                        firstRun = false;
+                    }
 
                     for (Kiwi kiwi : kiwis) {
                         LatLng latLngKiwi = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
