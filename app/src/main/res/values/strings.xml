@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">FindKiwi</string>
     <string name="previous">Previous</string>
-    <string name="where">Where is the Kiwi ? Can you help me ?</string>
+    <string name="where">Where are the Kiwis? Can you help me find one?</string>
     <string name="yes">Yes</string>
     <string name="home_fragment_label">Home</string>
     <string name="maps_fragment_label">Map</string>

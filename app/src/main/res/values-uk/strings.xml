@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">FindKiwi</string>
-    <string name="where">Де Ківі</string>
+    <string name="where">Де ківі? Чи можете ви допомогти мені знайти його?</string>
     <string name="yes">так</string>
     <string name="previous">Назад</string>
     <string name="home_fragment_label">Домашня сторінка</string>
