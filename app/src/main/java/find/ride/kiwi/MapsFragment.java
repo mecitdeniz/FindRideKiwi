@@ -159,7 +159,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
                     for (Kiwi kiwi : kiwis) {
                         LatLng latLngKiwi = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
-                        boolean isFoundOne = checkDistance(userLocation, latLngKiwi);
+                        boolean isFoundOne = MapUtils.checkDistance(userLocation, latLngKiwi);
 
                         if (isFoundOne) {
                             textViewDialog.setText(R.string.congratulatory);
@@ -182,9 +182,4 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 .requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
     }
 
-    private boolean checkDistance(LatLng from, LatLng to) {
-        double distance = SphericalUtil.computeDistanceBetween(from, to);
-        if (distance <= 1) return true;
-        return false;
-    }
 }
