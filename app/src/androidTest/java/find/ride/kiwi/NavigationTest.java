@@ -20,7 +20,7 @@ public class NavigationTest {
         ActivityScenario<MainActivity> activityScenario = launch(MainActivity.class);
         onView(withId(R.id.button_first)).perform(click());
 
-        onView(withId(R.id.map)).check(matches(isDisplayed()));
+        onView(withId(R.id.MapsScreen)).check(matches(isDisplayed()));
     }
 
 
@@ -29,7 +29,7 @@ public class NavigationTest {
         ActivityScenario<MainActivity> activityScenario = launch(MainActivity.class);
         onView(withId(R.id.button_first)).perform(click());
 
-        onView(withId(R.id.map)).check(matches(isDisplayed()));
+        onView(withId(R.id.MapsScreen)).check(matches(isDisplayed()));
         pressBack();
         onView(withId(R.id.HomeFragment)).check(matches(isDisplayed()));
     }

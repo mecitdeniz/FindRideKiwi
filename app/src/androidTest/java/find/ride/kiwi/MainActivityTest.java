@@ -3,6 +3,7 @@ package find.ride.kiwi;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,15 +16,18 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 @RunWith(AndroidJUnit4ClassRunner.class)
 public class MainActivityTest {
 
+    @Before
+    public void setup(){
+        ActivityScenario<MainActivity> activityScenario = launch(MainActivity.class);
+    }
+
     @Test
     public void testIsActivityInView() {
-        ActivityScenario<MainActivity> activityScenario = launch(MainActivity.class);
         onView(withId(R.id.MainActivity)).check(matches(isDisplayed()));
     }
 
     @Test
     public void testIsNavHostFragmentInView(){
-        ActivityScenario<MainActivity> activityScenario = launch(MainActivity.class);
         onView(withId(R.id.nav_host_fragment)).check(matches(isDisplayed()));
     }
 }
