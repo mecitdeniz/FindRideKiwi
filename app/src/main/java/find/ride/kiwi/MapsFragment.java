@@ -62,7 +62,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private LocationCallback locationCallback;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean firstRun = true;
-    private boolean firstTimeFound = true;
     private LinearLayout linearLayoutDialog;
     private TextView textViewDialog;
 
@@ -88,6 +87,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         linearLayoutDialog = view.findViewById(R.id.linearLayout_dialog);
         textViewDialog = view.findViewById(R.id.textView_dialog);
+        linearLayoutDialog.setAlpha(0.7f);
 
         if (mapFragment != null) {
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
@@ -142,7 +142,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private void initMap() {
-        hideDialog();
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -162,11 +161,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                         LatLng latLngKiwi = new LatLng(kiwi.getLatitude(), kiwi.getLongitude());
                         boolean isFoundOne = checkDistance(userLocation, latLngKiwi);
 
-                        if (isFoundOne && firstTimeFound) {
-                            firstTimeFound = false;
+                        if (isFoundOne) {
                             textViewDialog.setText(R.string.congratulatory);
-                            showDialog();
-                            hideDialog();
+                        }else {
+                            textViewDialog.setText(R.string.explanation);
                         }
                         Log.d("DISTANCE " , String.valueOf(isFoundOne));
                         Log.d("LOCATION UPDATE FR", "Latitude : " + String.valueOf(latitude) + " Longitude :" + String.valueOf(longitude));
@@ -182,21 +180,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         LocationServices.getFusedLocationProviderClient(getActivity())
                 .requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
-    }
-
-
-    private void hideDialog() {
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        linearLayoutDialog.setVisibility(View.GONE);
-                    }
-                }, 5000);
-    }
-
-    private void showDialog() {
-        linearLayoutDialog.setVisibility(View.VISIBLE);
     }
 
     private boolean checkDistance(LatLng from, LatLng to) {
